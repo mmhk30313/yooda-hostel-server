@@ -10,10 +10,8 @@ const StudentSchema = new mongoose.Schema(
     },
     roll: {
       type: String,
-      required: true,
       max: 10,
       length: 10,
-      unique: true,
     },
     age: {
       type: String,

@@ -1,6 +1,44 @@
 const students = require('../models/student');
 const router = require('express').Router();
 
+// Check Duplicate Roll
+router.post('/check-duplicate', async(req, res) => {
+    const { _id, roll } = req.body;
+    const query = { roll };
+    _id && (query._id = _id );
+    if(_id){
+        const student = await students.findOne(query);
+        // console.log("====11====",student);
+        if(student){
+            res.status(200).json({
+                status: true,
+                message: 'Roll is already exist and you can update it.'
+            });
+            return;
+        }
+        res.status(404).json({
+            status: false,
+            message: 'Roll is already exist and you can update it.'
+        });
+    }else{
+        const student = await students.findOne(query);
+        // console.log("====25====",student);
+        if(student?._id){
+            res.status(200).json({
+                status: false,
+                message: 'Roll is already exist.'
+            });
+            return;
+        }
+        res.status(200).json({
+            status: true,
+            message: 'Roll is already exist.'
+        });
+
+    }
+
+});
+
 // Get student by roll
 router.get('/:roll', async(req, res) => { 
     const {roll} = req.params;
@@ -14,7 +52,7 @@ router.get('/:roll', async(req, res) => {
         return;
     }
     res.json({
-        success: true,
+        success: false,
         message: "Student Not Found",
         data: null,
     })
@@ -78,20 +116,26 @@ router.post('/create', async(req, res) => {
     const {body} = req;
     // console.log({body});
     const student = new students(body);
-    const save_res = await student.save();
-    if(save_res) {
-        res.status(200).json({
-            success: true,
-            message: "Student Created",
-            data: save_res?._doc
+    try {
+        const save_res = await student.save();
+        // console.log({save_res});
+        if(save_res) {
+            res.status(200).json({
+                success: true,
+                message: "Student Created",
+                data: save_res?._doc
+            });
+            return;
+        }
+        
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: "The Student of this roll number is already exist",
+            data: null,
         });
         return;
     }
-    res.status(400).json({
-        success: false,
-        message: "The Student of this roll number is already exist",
-        data: null
-    });
 });
 
 // update student
@@ -100,23 +144,27 @@ router.post('/update', async(req, res) => {
     const {_id} = body;
     const query = {_id};
     delete body._id;
-    const update_res = await students.updateOne(query, {
-        $set: body, 
-    });
-    if(update_res?.modifiedCount) {
-        const result = await students.findOne(query);
-        res.status(200).json({
-            success: true,
-            message: "Student Updated",
-            data: result?._doc
+    console.log({body});
+    try {
+        const update_res = await students.updateOne(query, {
+            $set: body, 
         });
-        return;
+        if(update_res?.modifiedCount) {
+            const result = await students.findOne(query);
+            res.status(200).json({
+                success: true,
+                message: "Student Updated",
+                data: result?._doc
+            });
+            return;
+        }
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: "The Student of this roll number is already exist",
+            data: null,
+        });
     }
-    res.status(400).json({
-        success: false,
-        message: "Student Did Not Updated",
-        data: null
-    });
 });
 
 
