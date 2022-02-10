@@ -11,13 +11,12 @@ router.post('/check-duplicate', async(req, res) => {
         // console.log("====11====",student);
         if(student){
             res.status(200).json({
-                status: true,
-                message: 'Roll is already exist and you can update it.'
+                success: true,
             });
             return;
         }
         res.status(404).json({
-            status: false,
+            success: false,
             message: 'Roll is already exist and you can update it.'
         });
     }else{
@@ -25,14 +24,13 @@ router.post('/check-duplicate', async(req, res) => {
         // console.log("====25====",student);
         if(student?._id){
             res.status(200).json({
-                status: false,
+                success: false,
                 message: 'Roll is already exist.'
             });
             return;
         }
         res.status(200).json({
-            status: true,
-            message: 'Roll is already exist.'
+            success: true,
         });
 
     }
@@ -144,7 +142,7 @@ router.post('/update', async(req, res) => {
     const {_id} = body;
     const query = {_id};
     delete body._id;
-    console.log({body});
+    // console.log({body});
     try {
         const update_res = await students.updateOne(query, {
             $set: body, 
